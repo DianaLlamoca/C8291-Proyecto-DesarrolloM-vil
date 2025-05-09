@@ -214,26 +214,28 @@ fun LoginScreen(
 
         Spacer(modifier = Modifier.height(24.dp))
 
-        //Botón de google
         OutlinedButton(
             onClick = onGoogleLoginClick,
             modifier = Modifier.fillMaxWidth().height(50.dp),
-            //border = BorderStroke(1.dp, MaterialTheme.colorScheme.onSurface.copy(alpha = 0.2f)),
             colors = ButtonDefaults.outlinedButtonColors(
-                contentColor = MaterialTheme.colorScheme.onSurface
+
             )
         ) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                //Aquí está el ícono de google, para ello solo selecciono la imagen con el nombre en R.drawable
-                /*Icon(
-                    painter = painterResource(R.drawable.ic_google),
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Center
+            ) {
+                Icon(
+                    painter = painterResource(R.drawable.google),
                     contentDescription = "Google",
+                    modifier = Modifier.size(24.dp),
                     tint = Color.Unspecified
-                )*/
+                )
                 Spacer(modifier = Modifier.width(8.dp))
                 Text("Iniciar sesión con Google")
             }
         }
+
     }
 }
 
