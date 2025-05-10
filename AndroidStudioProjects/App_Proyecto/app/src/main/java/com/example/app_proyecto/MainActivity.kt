@@ -1,21 +1,14 @@
 package com.example.app_proyecto
 
-import android.content.Intent
+
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.ui.tooling.preview.Preview
-import com.example.app_proyecto.ui.theme.App_ProyectoTheme
-
-//
-
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -25,237 +18,394 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.AccountCircle
+import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Checkbox
+import androidx.compose.material3.Divider
+import androidx.compose.material3.DrawerValue
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalNavigationDrawer
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.layout.*
-import androidx.compose.material3.*
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-
-
-
-///
-
-
-
-// MainActivity.kt
-import androidx.activity.compose.setContent
-import androidx.activity.result.IntentSenderRequest
-import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material.icons.filled.Email
-import androidx.compose.material.icons.filled.Lock
-import androidx.compose.material3.*
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.vectorResource
-import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.input.PasswordVisualTransformation
-import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
+import com.example.app_proyecto.ui.theme.App_ProyectoTheme
+
 import androidx.compose.ui.unit.dp
-import com.google.android.gms.auth.api.identity.BeginSignInRequest
-import com.google.android.gms.auth.api.identity.Identity
-import com.google.android.gms.auth.api.identity.SignInClient
-import com.google.android.gms.auth.api.signin.GoogleSignIn
-import com.google.android.gms.auth.api.signin.GoogleSignInAccount
-import com.google.android.gms.auth.api.signin.GoogleSignInClient
-import com.google.android.gms.auth.api.signin.GoogleSignInOptions
-import com.google.android.gms.common.api.ApiException
-import com.google.android.gms.tasks.Task
+import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.tasks.await
-
-
 
 class MainActivity : ComponentActivity() {
-    private lateinit var googleSignInClient: GoogleSignInClient
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
-        //Aquí se realiza la configuración del cliente de Google Sign-In
-        val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-            .requestEmail()
-            .build()
-
-        googleSignInClient = GoogleSignIn.getClient(this, gso)
-
         setContent {
-            MyAppTheme {  //Aquí uso el tema personalizado que he creado
+            MaterialTheme {
                 Surface(
                     modifier = Modifier.fillMaxSize(),
-                    color = MaterialTheme.colorScheme.surface
+                    color = MaterialTheme.colorScheme.background
                 ) {
-                    val context = LocalContext.current
-                    LoginScreen(
-                        onLoginClick = { email, password ->
-                            //Aquí (que aún falta implementar) debe estar la lógica que seguirá el programa cuando el usuario se logee
-                            println("Email: $email, Password: $password")
-                        },
-                        onGoogleLoginClick = {
-                            val signInIntent = googleSignInClient.signInIntent
-                            googleSignInLauncher.launch(signInIntent)
-                        }
-                    )
+                    MainScreen()
                 }
             }
         }
     }
+}
 
-    //Aquí está el 'lanzador' para el resultado de Google Sign-In
-    private val googleSignInLauncher = registerForActivityResult(
-        ActivityResultContracts.StartActivityForResult()
-    ) { result ->
-        val task = GoogleSignIn.getSignedInAccountFromIntent(result.data)
-        handleSignInResult(task)
-    }
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun MainScreen() {
+    val drawerState = rememberDrawerState(DrawerValue.Closed)
+    val scope = rememberCoroutineScope()
 
-    private fun handleSignInResult(completedTask: Task<GoogleSignInAccount>) {
-        try {
-            val account = completedTask.getResult(ApiException::class.java)
-            println("Usuario autenticado con Google: ${account?.email}")
-
-        } catch (e: ApiException) {
-            println("Error en Google Sign-In: ${e.statusCode}")
+    ModalNavigationDrawer(
+        drawerState = drawerState,
+        drawerContent = {
+            DrawerContent {
+                scope.launch { drawerState.close() }
+            }
+        }
+    ) {
+        Scaffold(
+            topBar = {
+                TopAppBar(
+                    title = { },
+                    navigationIcon = {
+                        IconButton(
+                            onClick = {
+                                scope.launch { drawerState.open() }
+                            }
+                        ) {
+                            Icon(Icons.Default.Menu, contentDescription = "Menu")
+                        }
+                    }
+                )
+            }
+        ) { paddingValues ->
+            Box(modifier = Modifier.padding(paddingValues)) {
+                DailyPlanContent()
+            }
         }
     }
 }
 
-//Esta es la interfaz del inicio de sesión
+//Las opciones que se muestran al darle click al botón de display en la esquina superior de la pantalla
 @Composable
-fun LoginScreen(
-    onLoginClick: (String, String) -> Unit,
-    onGoogleLoginClick: () -> Unit
-) {
-    var email by remember { mutableStateOf("") }
-    var password by remember { mutableStateOf("") }
-
+fun DrawerContent(onItemClick: () -> Unit) {
     Column(
         modifier = Modifier
+            .width(250.dp)
             .fillMaxSize()
-            .padding(horizontal = 24.dp),
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally
+            .background(Color.White)
+            .padding(16.dp)
     ) {
         Text(
-            text = "Iniciar Sesión",
+            text = "Menú",
             style = MaterialTheme.typography.headlineMedium,
-            modifier = Modifier.padding(bottom = 32.dp)
+            modifier = Modifier.padding(vertical = 16.dp)
         )
 
-        OutlinedTextField(
-            value = email,
-            onValueChange = { email = it },
-            label = { Text("Correo electrónico") },
-            leadingIcon = { Icon(Icons.Default.Email, "Email") },
-            modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp),
-            singleLine = true,
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email)
+        //Aquí irán las opciones al desplegar el botón ubicado en la esquina superior izquierda
+        Text(
+            text = "Inicio",
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable { onItemClick() }
+                .padding(vertical = 8.dp)
+        )
+        Text(
+            text = "Crear plan personalizado",
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable { onItemClick() }
+                .padding(vertical = 8.dp)
+        )
+        Text(
+            text = "Mi plan de comidas",
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable { onItemClick() }
+                .padding(vertical = 8.dp)
+        )
+        Text(
+            text = "Recetario peruano",
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable { onItemClick() }
+                .padding(vertical = 8.dp)
+        )
+        Text(
+            text = "Favoritos",
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable { onItemClick() }
+                .padding(vertical = 8.dp)
+        )
+        Text(
+            text = "Perfil del usuario",
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable { onItemClick() }
+                .padding(vertical = 8.dp)
+        )
+        Text(
+            text = "Historial",
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable { onItemClick() }
+                .padding(vertical = 8.dp)
+        )
+    }
+}
+
+@Composable
+fun DailyPlanContent() {
+    LazyColumn(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp)
+    ) {
+        item {
+            GreetingSection()
+            Spacer(modifier = Modifier.height(24.dp))
+            DailyPlanSection()
+            Spacer(modifier = Modifier.height(24.dp))
+            ViewDetailsSection()
+            Spacer(modifier = Modifier.height(24.dp))
+        }
+    }
+}
+
+@Composable
+fun GreetingSection() {
+    Column {
+        Text(
+            text = "¡Buenos días!",
+            fontSize = 24.sp,
+            fontWeight = FontWeight.Bold
+        )
+        Text(
+            text = "Hoy es sábado 10 de mayo",
+            fontSize = 16.sp,
+            color = Color.Gray
+        )
+    }
+}
+
+@Composable
+fun DailyPlanSection() {
+    Column {
+
+        Text(
+            text = "PLAN DE HOY",
+            fontSize = 18.sp,
+            fontWeight = FontWeight.Bold,
+            modifier = Modifier.padding(bottom = 8.dp)
         )
 
-        OutlinedTextField(
-            value = password,
-            onValueChange = { password = it },
-            label = { Text("Contraseña") },
-            leadingIcon = { Icon(Icons.Default.Lock, "Contraseña") },
-            visualTransformation = PasswordVisualTransformation(),
-            modifier = Modifier.fillMaxWidth().padding(bottom = 24.dp),
-            singleLine = true,
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password)
-        )
 
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(250.dp)  //Altura de la imagen fija
+                .padding(vertical = 8.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            Image(
+                painter = painterResource(R.drawable.ajidegallina),
+                contentDescription = "Plato del día",
+                modifier = Modifier
+                    .fillMaxWidth(0.9f)  //90% del ancho disponible
+                    .height(200.dp),  //Se define la altura de la imagen
+                contentScale = ContentScale.Crop  //Escala de la imagen
+            )
+        }
+
+
+        MealItem("Desayuno:", "Pan con palta y quinua atamalada")
+        Divider(modifier = Modifier.padding(vertical = 8.dp))
+        MealItem("Almuerzo:", "Ají de gallina con arroz integral")
+        Divider(modifier = Modifier.padding(vertical = 8.dp))
+        MealItem("Cena:", "Sopa de quinua y ensalada fresca")
+        Divider(modifier = Modifier.padding(vertical = 8.dp))
+        MealItem("Snack:", "Yogur natural con frutas")
+    }
+}
+
+@Composable
+fun MealItem(mealType: String, description: String) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween
+    ) {
+        Text(
+            text = mealType,
+            fontWeight = FontWeight.Bold,
+            modifier = Modifier.weight(0.3f)
+        )
+        Text(
+            text = description,
+            modifier = Modifier.weight(0.7f)
+        )
+    }
+}
+
+
+@Composable
+fun ViewDetailsSection() {
+    //Aquí se definen los estados para los checkboxes (los botones de 'check')
+    val (recChecked, setRecChecked) = remember { mutableStateOf(false) }
+    val (waterChecked, setWaterChecked) = remember { mutableStateOf(true) }
+    val (menuChecked, setMenuChecked) = remember { mutableStateOf(false) }
+    val (shoppingChecked, setShoppingChecked) = remember { mutableStateOf(false) }
+
+    Column(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        //Botón de 'VER DETALLE DEL DÍA'
         Button(
-            onClick = { onLoginClick(email, password) },
-            modifier = Modifier.fillMaxWidth().height(50.dp)
+            onClick = { /* Aquí falta implementar la lógica que se mostrará cuando el usuario da click en el botón */ },
+            modifier = Modifier
+                .padding(vertical = 8.dp)
+                .fillMaxWidth(0.7f)
         ) {
-            Text("LOG IN", style = MaterialTheme.typography.labelLarge)
+            Text("VER DETALLE DEL DÍA")
         }
 
-        Spacer(modifier = Modifier.height(32.dp))
+        Divider(modifier = Modifier.padding(vertical = 8.dp))
 
-        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
-            Divider(
-                modifier = Modifier.weight(1f),
-                thickness = 1.dp,
-                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f)
-            )
-            Text(
-                text = "o continuar con",
-                modifier = Modifier.padding(horizontal = 8.dp),
-                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
-            )
-            Divider(
-                modifier = Modifier.weight(1f),
-                thickness = 1.dp,
-                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f)
+        //Sección de recomendación (texto e imagen)
+        Text(
+            text = "RECOMENDACIÓN DEL DÍA:",
+            fontWeight = FontWeight.Bold,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 4.dp)
+        )
+
+
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(250.dp)  //Se le define una altura fija
+                .padding(vertical = 8.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            Image(
+                painter = painterResource(R.drawable.quinua),
+                contentDescription = "Recomendación",
+                modifier = Modifier
+                    .fillMaxWidth(0.9f)  //90% del ancho disponible
+                    .height(200.dp),  //Aquí se define la altura fija
+                contentScale = ContentScale.Crop  //Se define el ajuste de escala de la imagen
             )
         }
 
-        Spacer(modifier = Modifier.height(24.dp))
 
-        OutlinedButton(
-            onClick = onGoogleLoginClick,
-            modifier = Modifier.fillMaxWidth().height(50.dp),
-            colors = ButtonDefaults.outlinedButtonColors(
 
-            )
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.fillMaxWidth()
         ) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.Center
-            ) {
-                Icon(
-                    painter = painterResource(R.drawable.google),
-                    contentDescription = "Google",
-                    modifier = Modifier.size(24.dp),
-                    tint = Color.Unspecified
-                )
-                Spacer(modifier = Modifier.width(8.dp))
-                Text("Iniciar sesión con Google")
+            Checkbox(
+                checked = recChecked,
+                onCheckedChange = { setRecChecked(it) },
+                modifier = Modifier.size(24.dp)
+            )
+            Spacer(modifier = Modifier.width(8.dp))
+            Column {
+                Text("La quinua es rica en proteína vegetal.")
+                Text("Agrégala a tus sopas.")
             }
         }
 
+        Spacer(modifier = Modifier.height(16.dp))
+
+        //Esta es la sección de notificaciones
+        Text(
+            text = "NOTIFICACIONES:",
+            fontWeight = FontWeight.Bold,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 4.dp)
+        )
+
+        NotificationItem(
+            text = "Te faltan 2 vasos de agua",
+            checked = waterChecked,
+            onCheckedChange = { setWaterChecked(it) }
+        )
+        NotificationItem(
+            text = "¿Quieres un menú especial para mañana sábado?",
+            checked = menuChecked,
+            onCheckedChange = { setMenuChecked(it) }
+        )
+        NotificationItem(
+            text = "Recuerda comprar palta y huevo",
+            checked = shoppingChecked,
+            onCheckedChange = { setShoppingChecked(it) }
+        )
     }
 }
 
 @Composable
-fun BorderStroke(x0: Dp, x1: Color) {
-    TODO("Aún no está implementado")
+fun NotificationItem(text: String, checked: Boolean, onCheckedChange: (Boolean) -> Unit) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 4.dp)
+    ) {
+        Checkbox(
+            checked = checked,
+            onCheckedChange = onCheckedChange,
+            modifier = Modifier.size(24.dp)
+        )
+        Spacer(modifier = Modifier.width(8.dp))
+        Text(text = text)
+    }
 }
 
-//Este tema es el que define los colores de la interfaz
+
+
+
 @Composable
-fun MyAppTheme(
-    content: @Composable () -> Unit
-) {
-    MaterialTheme(
-        colorScheme = lightColorScheme(
-            primary = Color(0xFFCC7C0B),
-            secondary = Color(0xFF03DAC6),
-            surface = Color(0xFFFFFFFF),
-            onSurface = Color(0xFF000000)
-        ),
-        content = content
-    )
+fun NotificationItem(text: String, checked: Boolean) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier.padding(vertical = 4.dp)
+    ) {
+        Checkbox(
+            checked = checked,
+            onCheckedChange = {},
+            modifier = Modifier.size(24.dp)
+        )
+        Spacer(modifier = Modifier.width(8.dp))
+        Text(text = text)
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun DefaultPreview() {
+    MaterialTheme {
+        MainScreen()
+    }
 }
